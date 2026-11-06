@@ -8,14 +8,17 @@ const (
 	Down Direction = "down"
 )
 
+// Seed represents a database seed.
 type Seed struct {
-	Version    uint
+	Version    uint64
 	Identifier string
 	Up         string
 	Down       string
 	Checksum   string
 }
 
+
+// State represents the current state of the database.
 type State struct {
     Version uint64
     Dirty   bool

@@ -1,0 +1,35 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    #- golint
+    - unconvert
+    #- dupl
+    - goconst
+    - misspell
+    - unparam
+    - nakedret
+    - prealloc
+    - revive
+    #- gosec
+  settings:
+    misspell:
+      locale: US
+    revive:
+      rules:
+        - name: redundant-build-tag
+  exclusions:
+    rules:
+      # gosec: Duplicated errcheck checks
+      - text: G104
+
+formatters:
+  enable:
+    - gofmt
+
+issues:
+  max-same-issues: 0
+  max-issues-per-linter: 0

@@ -6,17 +6,16 @@ import (
 	"fmt"
 )
 
-type Executor struct {
-	db *sql.DB
+// Executor is responsible for executing seed files against the database.
+type Executor struct{}
+
+// NewExecutor creates and returns a new Executor instance.
+func NewExecutor() *Executor {
+	return &Executor{}
 }
 
-func NewExecutor(db *sql.DB) *Executor {
-	return &Executor{
-		db: db,
-	}
-}
-
-func (e *Executor) Execute(ctx context.Context, seed Seed, direction Direction) error {
+// Execute runs the given seed in the specified direction.
+func (e *Executor) Execute(ctx context.Context, tx *sql.Tx, seed Seed, direction Direction) error {
 	var query string
 
 	switch direction {
@@ -25,7 +24,10 @@ func (e *Executor) Execute(ctx context.Context, seed Seed, direction Direction) 
 	case Down:
 		query = seed.Down
 	default:
-		return fmt.Errorf("unsupported seed direction: %s", direction)
+		return fmt.Errorf(
+			"unsupported seed direction: %s",
+			direction,
+		)
 	}
 
 	if query == "" {
@@ -36,33 +38,13 @@ func (e *Executor) Execute(ctx context.Context, seed Seed, direction Direction) 
 		)
 	}
 
-	tx, err := e.db.BeginTx(ctx, nil)
-	if err != nil {
-		return fmt.Errorf(
-			"failed to begin transaction for seed %d: %w",
-			seed.Version,
-			err,
-		)
-	}
-
-	defer tx.Rollback()
-
 	if _, err := tx.ExecContext(ctx, query); err != nil {
 		return fmt.Errorf(
-			"failed to execute seed %d (%s): %w",
+			"execute seed %d (%s): %w",
 			seed.Version,
 			direction,
 			err,
 		)
 	}
-
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf(
-			"failed to commit seed %d: %w",
-			seed.Version,
-			err,
-		)
-	}
-
 	return nil
 }
